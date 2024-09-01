@@ -1,6 +1,6 @@
 "use client"
 
-import { signInSchema } from '@/schemas/signInSchema'
+import { signUpSchema } from '@/schemas/signUpSchema'
 import { zodResolver } from '@hookform/resolvers/zod'
 import React from 'react'
 import { useForm } from 'react-hook-form'
@@ -19,49 +19,57 @@ import {
 import { Input } from "@/components/ui/input"
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
-import { signIn } from 'next-auth/react'
 import Link from 'next/link'
 
 
 const page = () => {
 
     const router = useRouter();
-    const form = useForm<z.infer<typeof signInSchema>>({
-        resolver: zodResolver(signInSchema),
+    const form = useForm<z.infer<typeof signUpSchema>>({
+        resolver: zodResolver(signUpSchema),
         defaultValues: {
+            username: "",
             password: "",
             email: ""
         }
     });
-    async function onSubmit(values: z.infer<typeof signInSchema>) {
+    async function onSubmit(values: z.infer<typeof signUpSchema>) {
 
         try {
-            const data = await signIn('credentials', {
-                redirect: false,
-                email: values.email,
-                password: values.password
-            })
-            if (data?.error) {
-                if (data.error === "CredentialsSignin") {
-                    return toast.error("Invalid credentials!")
-                }
-                return toast.error("There was a problem signing you up!")
+            const data = await axios.post('/api/sign-up', values)
+            if (!data.data.success) {
+                toast.error(data.data.message)
             }
-            toast.success("You have been logged in!")
-            router.push("/")
+            else {
+                toast.success("Your account has been registered!")
+                router.push("/sign-in")
+            }
 
         } catch (error) {
             if (error instanceof AxiosError) {
-                toast.error(error.response?.data.message || "There was an error logging you in!")
+                toast.error(error.response?.data.message || "There was an error signing you up!")
             }
         }
 
     }
     return (
         <div className="w-1/3 mx-auto mt-40">
-            <div className="mb-10">Sign In</div>
+            <div className="mb-10">Sign Up</div>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <FormField
+                        control={form.control}
+                        name="username"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Username</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Enter your username..." {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
                     <FormField
                         control={form.control}
                         name="email"
@@ -88,9 +96,8 @@ const page = () => {
                             </FormItem>
                         )}
                     />
-                    <Link className = "block" href="/sign-up">Don't have an account?</Link>
-
-                    <Button type="submit">Sign In</Button>
+                    <Link className = "block" href="/sign-in">Already have an account?</Link>
+                    <Button type="submit">Sign Up</Button>
                 </form>
             </Form>
         </div >
