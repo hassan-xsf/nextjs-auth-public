@@ -5,9 +5,9 @@ import { signUpSchema } from "@/schemas/signUpSchema";
 
 export async function POST(request: Request) {
     try {
-        const { username, email, password } = await request.json();
+        const { name, email, password } = await request.json();
 
-        const validate = signUpSchema.safeParse({ username, email, password })
+        const validate = signUpSchema.safeParse({ name, email, password })
         if (!validate.success) {
             const errorMessages = validate.error.issues.map(issue => issue.message).join(", ");
 
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
             where: {
                 OR: [
                     { email },
-                    { username }
+                    { name }
                 ]
             }
         });
@@ -30,14 +30,14 @@ export async function POST(request: Request) {
             console.log(userExists)
             return NextResponse.json({
                 success: false,
-                message: userExists.username === username ? "Username is already taken" : "Email is already taken!",
+                message: userExists.name === name ? "Username is already taken" : "Email is already taken!",
             }, { status: 400 });
         }
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const user = await db.user.create({
             data: {
-                username,
+                name,
                 email,
                 password: hashedPassword
             }

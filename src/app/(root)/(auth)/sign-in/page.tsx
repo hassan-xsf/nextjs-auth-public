@@ -49,6 +49,7 @@ const page = () => {
             }
             toast.success("You have been logged in!")
             router.push("/")
+            router.refresh();
 
         } catch (error) {
             if (error instanceof AxiosError) {
@@ -59,7 +60,7 @@ const page = () => {
     }
     return (
         <div className="w-1/3 mx-auto mt-40">
-            <div className="mb-10">Sign In</div>
+            <div className="mb-10 text-xl font-bold">Sign In</div>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                     <FormField
@@ -88,7 +89,7 @@ const page = () => {
                             </FormItem>
                         )}
                     />
-                    <Link className = "block" href="/sign-up">Don't have an account?</Link>
+                    <Link className="block" href="/sign-up">Don't have an account?</Link>
 
                     <Button type="submit">Sign In</Button>
                 </form>

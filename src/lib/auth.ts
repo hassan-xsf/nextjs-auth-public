@@ -4,9 +4,14 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import { db } from "./db";
 import bcrypt from 'bcryptjs'
+import { NextAuthOptions, User } from "next-auth";
 
-export const authOptions = {
+export const authOptions: NextAuthOptions = {
     adapter: PrismaAdapter(db),
+    session: {
+        strategy: 'jwt'
+    },
+    secret: process.env.NEXTAUTH_SECRET,
     pages: {
         signIn: '/sign-in'
     },
@@ -27,11 +32,13 @@ export const authOptions = {
                     }
                 })
                 if (!findUser) return null;
-                const matchPass = await bcrypt.compare(credentials.password, findUser.password)
-                if (!matchPass) return null;
+                if (findUser.password) {
+                    const matchPass = await bcrypt.compare(credentials.password, findUser.password)
+                    if (!matchPass) return null;
+                }
                 return {
                     id: String(findUser.id),
-                    username: findUser.username,
+                    name: findUser.name,
                     email: findUser.email
                 }
             }
@@ -41,4 +48,27 @@ export const authOptions = {
             clientSecret: process.env.GITHUB_SECRET!,
         }),
     ],
+    callbacks: {
+        async jwt({ token, user }) {
+            if (user) {
+                return {
+                    ...token,
+                    name: user.name
+                }
+            }
+            return token
+        },
+        async session({ session, token }) {
+            if (token) {
+                return {
+                    ...session,
+                    user: {
+                        ...session.user,
+                        name: token.name
+                    }
+                }
+            }
+            return session;
+        }
+    }
 }

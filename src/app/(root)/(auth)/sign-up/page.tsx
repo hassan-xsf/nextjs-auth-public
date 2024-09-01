@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input"
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import GithubSignIn from '@/components/ui/GithubSignIn'
 
 
 const page = () => {
@@ -28,7 +29,7 @@ const page = () => {
     const form = useForm<z.infer<typeof signUpSchema>>({
         resolver: zodResolver(signUpSchema),
         defaultValues: {
-            username: "",
+            name: "",
             password: "",
             email: ""
         }
@@ -50,16 +51,15 @@ const page = () => {
                 toast.error(error.response?.data.message || "There was an error signing you up!")
             }
         }
-
     }
     return (
         <div className="w-1/3 mx-auto mt-40">
-            <div className="mb-10">Sign Up</div>
+            <div className="mb-10 text-xl font-bold">Sign Up</div>
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 flex flex-col">
                     <FormField
                         control={form.control}
-                        name="username"
+                        name="name"
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Username</FormLabel>
@@ -96,10 +96,11 @@ const page = () => {
                             </FormItem>
                         )}
                     />
-                    <Link className = "block" href="/sign-in">Already have an account?</Link>
+                    <Link className="block" href="/sign-in">Already have an account?</Link>
                     <Button type="submit">Sign Up</Button>
-                </form>
-            </Form>
+                    <GithubSignIn />
+            </form>
+        </Form>
         </div >
     )
 }
